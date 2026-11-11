@@ -18,6 +18,7 @@ fn build_app() -> App {
         ..default()
     }));
     app.add_plugins(PlayerPlugin);
+    app.add_plugins(AsepriteUltraPlugin);
     app.insert_resource(ClearColor(Color::srgb(0.1, 0.1, 0.15)));
     app.add_systems(Startup, setup);
     app

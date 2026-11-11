@@ -155,12 +155,8 @@ impl Player {
 
 pub struct PlayerPlugin;
 
-// #[derive(Component, Deref, DerefMut)]
-// struct AnimationTimer(Timer);
-
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(AsepriteUltraPlugin);
         app.add_systems(Startup, load_player_aesprite);
         app.add_systems(Update, player_movement);
         app.add_systems(Update, update_player_health_bar);
