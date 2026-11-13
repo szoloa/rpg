@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use bevy_aseprite_ultra::prelude::*;
+use bevy_ecs_tiled::prelude::*;
 use rpg::*;
 
 // use rpg::player::Player;
@@ -17,13 +19,21 @@ fn build_app() -> App {
         primary_window: Some(Window { ..default() }),
         ..default()
     }));
-    app.add_plugins(PlayerPlugin);
-    app.add_plugins(AsepriteUltraPlugin);
-    app.insert_resource(ClearColor(Color::srgb(0.1, 0.1, 0.15)));
+
     app.add_systems(Startup, setup);
+    app.add_plugins(AsepriteUltraPlugin);
+    app.add_plugins(TiledPlugin::default());
+    app.add_plugins(MapPlugin);
+    app.add_plugins(PlayerPlugin);
+    // app.insert_resource(ClearColor(Color::srgb(0.1, 0.1, 0.15)));
     app
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2d);
+    commands.spawn((
+        TiledMap(asset_server.load("map.tmx")),
+        TilemapAnchor::Center,               // 将地图锚点设为中心
+        Transform::from_xyz(0.0, 0.0, -1.0), // 调整地图位置
+    ));
 }
