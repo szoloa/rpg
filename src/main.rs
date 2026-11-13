@@ -23,8 +23,12 @@ fn build_app() -> App {
     app.add_systems(Startup, setup);
     app.add_plugins(AsepriteUltraPlugin);
     app.add_plugins(TiledPlugin::default());
+    app.add_plugins(TiledPhysicsPlugin::<TiledPhysicsAvianBackend>::default());
+    // 添加 Avian 物理引擎插件
+    app.add_plugins(PhysicsPlugins::default());
     app.add_plugins(MapPlugin);
     app.add_plugins(PlayerPlugin);
+    app.add_plugins(EnemyPlugin);
     // app.insert_resource(ClearColor(Color::srgb(0.1, 0.1, 0.15)));
     app
 }

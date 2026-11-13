@@ -6,3 +6,4 @@ pub mod map;
 pub use map::*;
 
 pub mod enemy;
+pub use enemy::*;
