@@ -14,7 +14,8 @@ opt-level = 3
 [dependencies]
 bevy = "0.20.1"
 bevy_aseprite_ultra = "0.10.0"
-bevy_ecs_tiled = { version = "0.15.1", features = ["avian"] }
+bevy_ecs_tiled = { version = "0.15.1", features = ["avian", "atlas"] }
 # 或者使用 Rapier: features = ["rapier"]
 csv = "1.4.0"
 serde = { version = "1.0", features = ["derive"] }
+avian2d = "0.8.0"

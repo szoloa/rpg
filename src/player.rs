@@ -1,3 +1,4 @@
+use avian2d::prelude::*;
 use bevy::image::Image;
 use bevy::log::tracing_subscriber::reload::Handle;
 use bevy::prelude::*;
@@ -173,6 +174,9 @@ fn load_player_aesprite(mut commands: Commands, asset_server: Res<AssetServer>) 
                 animation: Animation::default().with_tag("down"),
             },
             Player::empty(),
+            RigidBody::Dynamic,
+            Collider::circle(12.0),
+            LockedAxes::ROTATION_LOCKED,
         ))
         .id();
     spawn_health_bar(&mut commands, player_id, COLOR_HP_PLAYER, 10.0);
@@ -180,11 +184,10 @@ fn load_player_aesprite(mut commands: Commands, asset_server: Res<AssetServer>) 
 
 fn player_movement(
     keyboard: Res<ButtonInput<KeyCode>>,
-    time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Player)>,
+    mut query: Query<(&mut LinearVelocity, &mut Player)>,
     mut animation_assets_query: Query<&mut AseAnimation, With<Player>>,
 ) {
-    let Ok((mut transform, mut player)) = query.single_mut() else {
+    let Ok((mut velocity, mut player)) = query.single_mut() else {
         return;
     };
 
@@ -204,7 +207,7 @@ fn player_movement(
 
     if direction.length_squared() > 0.0 {
         let dir = direction.normalize();
-        transform.translation += dir.extend(0.0) * 200.0 * time.delta_secs();
+        velocity.0 = dir * 200.0;
 
         let Ok(mut animation_assets) = animation_assets_query.single_mut() else {
             return;
@@ -228,6 +231,8 @@ fn player_movement(
                 animation_assets.animation = Animation::default().with_tag("down");
             }
         }
+    } else {
+        velocity.0 = Vec2::ZERO;
     }
 }
 

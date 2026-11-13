@@ -114,13 +114,13 @@
    </wangset>
   </wangsets>
  </tileset>
- <tileset firstgid="1768" name="tilemap" tilewidth="32" tileheight="32" spacing="2" tilecount="486" columns="27">
+ <tileset firstgid="1768" name="tilemap1" tilewidth="32" tileheight="32" spacing="2" tilecount="486" columns="27">
   <image source="tilemap1.png" width="916" height="610"/>
  </tileset>
- <tileset firstgid="2254" name="tilemap" tilewidth="32" tileheight="32" spacing="2" tilecount="132" columns="12">
+ <tileset firstgid="2254" name="tilemap2" tilewidth="32" tileheight="32" spacing="2" tilecount="132" columns="12">
   <image source="tilemap2.png" width="406" height="372"/>
  </tileset>
- <tileset firstgid="2386" name="tilemap" tilewidth="32" tileheight="32" spacing="2" tilecount="132" columns="12">
+ <tileset firstgid="2386" name="tilemap3" tilewidth="32" tileheight="32" spacing="2" tilecount="132" columns="12">
   <image source="tilemap3.png" width="406" height="372"/>
  </tileset>
  <tileset firstgid="2518" name="tilemap" tilewidth="32" tileheight="32" spacing="2" tilecount="132" columns="12">

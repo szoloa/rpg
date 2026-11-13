@@ -1,3 +1,4 @@
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::*;
 use bevy_ecs_tiled::prelude::*;
@@ -26,6 +27,8 @@ fn build_app() -> App {
     app.add_plugins(TiledPhysicsPlugin::<TiledPhysicsAvianBackend>::default());
     // 添加 Avian 物理引擎插件
     app.add_plugins(PhysicsPlugins::default());
+    // 俯视角 2D 游戏，关闭重力
+    app.insert_resource(Gravity::ZERO);
     app.add_plugins(MapPlugin);
     app.add_plugins(PlayerPlugin);
     app.add_plugins(EnemyPlugin);
@@ -35,9 +38,4 @@ fn build_app() -> App {
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2d);
-    commands.spawn((
-        TiledMap(asset_server.load("map.tmx")),
-        TilemapAnchor::Center,               // 将地图锚点设为中心
-        Transform::from_xyz(0.0, 0.0, -1.0), // 调整地图位置
-    ));
 }
