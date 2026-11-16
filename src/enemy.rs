@@ -11,7 +11,7 @@ const COLOR_ENEMY: Color = Color::srgb(0.2, 0.2, 0.2);
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
-        app.add_systems(Update, enemy_ai);
+        app.add_systems(Update, enemy_move_ai);
     }
 }
 
@@ -36,7 +36,7 @@ fn add_enemy(mut commands: Commands, enemy: Enemy) -> Entity {
         .id()
 }
 
-fn enemy_ai(
+fn enemy_move_ai(
     mut enemy_query: Query<
         (&mut LinearVelocity, &Transform, &Enemy),
         Without<crate::player::core::Player>,
@@ -59,14 +59,14 @@ fn enemy_ai(
         } else {
             velocity.0 = Vec2::ZERO;
         }
+    }
+}
 
-        // 近战攻击
-        // enemy.attack_timer.tick(time.delta());
-        // if distance < 60.0 && enemy.attack_timer.finished() {
-        //     player_health.current -= 1;
-        //     enemy.attack_timer.reset();
-        //     println!("敌人攻击！玩家剩余 HP: {}", player_health.current);
-        // }
+fn enemy_attact_ai() {
+    enemy.attack_timer.tick(time.delta());
+    if distance < 60.0 && enemy.attack_timer.finished() {
+        player_health.current -= 1;
+        enemy.attack_timer.reset();
     }
 }
 
@@ -86,7 +86,12 @@ struct Status {
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Component)]
-struct Attribute;
+struct Attribute {
+    hp: i32,
+    atk: i32,
+    def: i32,
+    spd: i32,
+}
 
 #[derive(Clone, PartialEq, Eq, Debug, Component)]
 pub struct Enemy {
@@ -151,14 +156,14 @@ impl EnemyDatabase {
 }
 
 impl Enemy {
-    // fn create(id: u32, name: &'static str, status: Status, attribute: Attribute) -> Enemy {
-    //     Enemy {
-    //         id: id,
-    //         name: name,
-    //         status: status,
-    //         attribute: Some(attribute),
-    //     }
-    // }
+    fn create(id: u32, name: &'static str, status: Status, attribute: Attribute) -> Enemy {
+        Enemy {
+            id: id,
+            name: name,
+            status: status,
+            attribute: Some(attribute),
+        }
+    }
     // fn empty() -> Enemy {
     //     let status = Status {
     //         anamy_type: "empty".to_string(),
@@ -181,7 +186,12 @@ impl Enemy {
                 def: enemy_template.def,
                 spd: enemy_template.spd,
             },
-            attribute: None,
+            attribute: Some(Attribute {
+                hp: enemy_template.hp,
+                atk: enemy_template.atk,
+                def: enemy_template.def,
+                spd: enemy_template.spd,
+            }),
         }
     }
 }

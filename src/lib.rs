@@ -7,3 +7,5 @@ pub use map::*;
 
 pub mod enemy;
 pub use enemy::*;
+
+pub mod gamestats;
