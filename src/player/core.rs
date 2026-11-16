@@ -1,6 +1,5 @@
+use crate::player::bag::*;
 use avian2d::prelude::*;
-use bevy::image::Image;
-use bevy::log::tracing_subscriber::reload::Handle;
 use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::*;
 
@@ -174,8 +173,9 @@ fn load_player_aesprite(mut commands: Commands, asset_server: Res<AssetServer>) 
                 animation: Animation::default().with_tag("down"),
             },
             Player::empty(),
+            ContainerComponent::<ItemType>::new(16),
             RigidBody::Dynamic,
-            Collider::circle(12.0),
+            Collider::rectangle(31.0, 56.0),
             LockedAxes::ROTATION_LOCKED,
         ))
         .id();
@@ -265,7 +265,6 @@ fn update_player_health_bar(
     mut commands: Commands,
     health_query: Query<(&Player, &Transform)>,
     mut bar_query: Query<(Entity, &HealthBar, &mut Transform, &mut Visibility), Without<Player>>,
-    mut child_sprite_query: Query<&mut Sprite, Without<HealthBar>>,
 ) {
     for (bar_entity, bar, mut bar_transform, mut visibility) in bar_query.iter_mut() {
         let Ok((player, owner_transform)) = health_query.get(bar.owner) else {
