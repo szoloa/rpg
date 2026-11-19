@@ -173,7 +173,7 @@ fn load_player_aesprite(mut commands: Commands, asset_server: Res<AssetServer>) 
                 animation: Animation::default().with_tag("down"),
             },
             Player::empty(),
-            ContainerComponent::<ItemType>::new(16),
+            ContainerComponent::<CommonItem>::new(16),
             RigidBody::Dynamic,
             Collider::rectangle(31.0, 56.0),
             LockedAxes::ROTATION_LOCKED,

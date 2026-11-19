@@ -6,39 +6,23 @@ pub trait BagItem: Send + Sync + Clone + 'static {
     /// 唯一 ID，用于判断是否为同类物品（未来做堆叠/合成可用）
     fn get_id(&self) -> u32;
     /// 显示名称
-    fn get_name(&self) -> &'static str;
+    fn get_name(&self) -> &str;
     /// 最大堆叠数
     fn max_stack(&self) -> u32 {
         1
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum ItemType {
-    Wood,
-    Stone,
-    Potion,
-}
-
-impl BagItem for ItemType {
+impl BagItem for CommonItem {
     fn get_id(&self) -> u32 {
-        match self {
-            ItemType::Wood => 1,
-            ItemType::Stone => 2,
-            ItemType::Potion => 3,
-        }
+        0
     }
-    fn get_name(&self) -> &'static str {
-        match self {
-            ItemType::Wood => "Wood",
-            ItemType::Stone => "Stone",
-            ItemType::Potion => "Potion",
-        }
+    fn get_name<'a>(&'a self) -> &'a str {
+        &self.item_name
     }
     fn max_stack(&self) -> u32 {
-        match self {
-            ItemType::Wood | ItemType::Stone => 99,
-            ItemType::Potion => 16,
+        match self.item_type {
+            ItemType::Weapon => 1,
         }
     }
 }
@@ -113,7 +97,7 @@ impl Plugin for BagPlugin {
 }
 
 fn debug_pickup(
-    mut query: Query<&mut ContainerComponent<ItemType>, With<crate::Player>>,
+    mut query: Query<&mut ContainerComponent<CommonItem>, With<crate::Player>>,
     keyboard: Res<ButtonInput<KeyCode>>,
 ) {
     if !keyboard.just_pressed(KeyCode::KeyE) {
@@ -121,9 +105,11 @@ fn debug_pickup(
     }
 
     let item = match pseudo_rand() {
-        0 => ItemType::Wood,
-        1 => ItemType::Stone,
-        _ => ItemType::Potion,
+        _ => CommonItem {
+            item_name: "empty".to_string(),
+            item_type: ItemType::Weapon,
+            max_stack: 1,
+        },
     };
     let name = item.get_name();
 
@@ -133,7 +119,7 @@ fn debug_pickup(
     };
     let inv = &mut container.0;
 
-    if inv.add_item(item) {
+    if inv.add_item(item.clone()) {
         println!(
             "[Bag] Picked up {} ({}/{})",
             name,
@@ -152,4 +138,16 @@ fn pseudo_rand() -> u32 {
         .unwrap()
         .subsec_nanos()
         % 3
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum ItemType {
+    Weapon,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CommonItem {
+    item_name: String,
+    item_type: ItemType,
+    max_stack: i32,
 }

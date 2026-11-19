@@ -4,6 +4,8 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use serde::Deserialize;
 
+pub use crate::enemy::ai::*;
+
 pub struct EnemyPlugin;
 
 const COLOR_ENEMY: Color = Color::srgb(0.2, 0.2, 0.2);
@@ -16,7 +18,7 @@ impl Plugin for EnemyPlugin {
 }
 
 fn setup(commands: Commands) {
-    let csv_data = include_str!("../assets/enemy.csv");
+    let csv_data = include_str!("../../assets/enemy.csv");
     let enemy_map = EnemyTemplate::load_enemy_type_from_csv(csv_data.into());
     let empty_enemy = enemy_map.get("empty").unwrap();
     let empty_enemy_entity = Enemy::create_from_enemy_template(empty_enemy);
@@ -34,40 +36,6 @@ fn add_enemy(mut commands: Commands, enemy: Enemy) -> Entity {
             LockedAxes::ROTATION_LOCKED,
         ))
         .id()
-}
-
-fn enemy_move_ai(
-    mut enemy_query: Query<
-        (&mut LinearVelocity, &Transform, &Enemy),
-        Without<crate::player::core::Player>,
-    >,
-    player_query: Query<&Transform, (With<crate::player::core::Player>, Without<Enemy>)>,
-) {
-    let Ok(player_transform) = player_query.single() else {
-        return;
-    };
-
-    for (mut velocity, enemy_transform, enemy) in enemy_query.iter_mut() {
-        let to_player =
-            player_transform.translation.truncate() - enemy_transform.translation.truncate();
-        let distance = to_player.length();
-
-        // 追击：朝玩家移动，贴近后停止
-        if distance > 45.0 {
-            let dir = to_player.normalize();
-            velocity.0 = dir * enemy.status.spd as f32;
-        } else {
-            velocity.0 = Vec2::ZERO;
-        }
-    }
-}
-
-fn enemy_attact_ai() {
-    enemy.attack_timer.tick(time.delta());
-    if distance < 60.0 && enemy.attack_timer.finished() {
-        player_health.current -= 1;
-        enemy.attack_timer.reset();
-    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Component)]
