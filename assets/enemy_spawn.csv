@@ -1,0 +1,5 @@
+enemy_type,x,y
+empty,100,150
+slime,-140,-90
+slime,220,-120
+slime,-260,180

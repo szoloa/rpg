@@ -32,6 +32,7 @@ fn build_app() -> App {
     app.add_plugins(MapPlugin);
     app.add_plugins(PlayerPlugin);
     app.add_plugins(EnemyPlugin);
+    app.add_plugins(CombatPlugin);
     app.add_plugins(BagPlugin);
     // app.insert_resource(ClearColor(Color::srgb(0.1, 0.1, 0.15)));
     app

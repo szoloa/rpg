@@ -1,3 +1,4 @@
+use crate::combat::{AttackCooldown, Health};
 use crate::player::bag::*;
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -63,15 +64,15 @@ struct Attribute {
 }
 
 impl Attribute {
-    fn empty() -> Self {
+    fn base() -> Self {
         Attribute {
-            level: 0,
-            max_hp: 1,
-            max_mp: 0,
-            atk: 0,
-            def: 0,
-            agk: 0,
-            mag: 0,
+            level: 1,
+            max_hp: 100,
+            max_mp: 20,
+            atk: 20,
+            def: 5,
+            agk: 5,
+            mag: 8,
         }
     }
 }
@@ -93,7 +94,6 @@ enum AnimationState {
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 struct Status {
-    health: Health,
     facing: PlayerFaceDirection,
     animationstate: AnimationState,
     mp: i32,
@@ -103,22 +103,12 @@ struct Status {
 impl Status {
     fn empty() -> Self {
         Status {
-            health: Health {
-                current: 1,
-                max: 100,
-            },
             facing: PlayerFaceDirection::DOWN,
             animationstate: AnimationState::Idle,
-            mp: 0,
+            mp: 20,
             exp: 0,
         }
     }
-}
-
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Component)]
-struct Health {
-    current: i32,
-    max: i32,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Component)]
@@ -136,7 +126,7 @@ impl Player {
         Player {
             id: id,
             name: name,
-            attribute: Attribute::empty(),
+            attribute: Attribute::base(),
             status: Status::empty(),
             races: races,
             class: class,
@@ -145,11 +135,26 @@ impl Player {
     pub fn empty() -> Self {
         Self::init(0, "Roxy", Races::Elves, Class::Mage)
     }
-    pub fn get_health_current(&self) -> i32 {
-        self.status.health.current
+    pub fn id(&self) -> u32 {
+        self.id
     }
-    pub fn get_health_max(&self) -> i32 {
-        self.status.health.max
+    pub fn name(&self) -> &'static str {
+        self.name
+    }
+    pub fn level(&self) -> i32 {
+        self.attribute.level
+    }
+    pub fn max_hp(&self) -> i32 {
+        self.attribute.max_hp
+    }
+    pub fn max_mp(&self) -> i32 {
+        self.attribute.max_mp
+    }
+    pub fn atk(&self) -> i32 {
+        self.attribute.atk
+    }
+    pub fn def(&self) -> i32 {
+        self.attribute.def
     }
 }
 
@@ -165,6 +170,8 @@ impl Plugin for PlayerPlugin {
 
 fn load_player_aesprite(mut commands: Commands, asset_server: Res<AssetServer>) {
     // sprite animation
+    let player = Player::empty();
+    let max_hp = player.max_hp();
     let player_id = commands
         .spawn((
             Sprite::default(),
@@ -172,14 +179,16 @@ fn load_player_aesprite(mut commands: Commands, asset_server: Res<AssetServer>) 
                 aseprite: asset_server.load("player.aseprite"),
                 animation: Animation::default().with_tag("down"),
             },
-            Player::empty(),
+            player,
+            Health::new(max_hp),
+            AttackCooldown::new(0.4),
             ContainerComponent::<CommonItem>::new(16),
             RigidBody::Dynamic,
             Collider::rectangle(31.0, 56.0),
             LockedAxes::ROTATION_LOCKED,
         ))
         .id();
-    spawn_health_bar(&mut commands, player_id, COLOR_HP_PLAYER, 10.0);
+    spawn_health_bar(&mut commands, player_id, COLOR_HP_PLAYER, 40.0);
 }
 
 fn player_movement(
@@ -238,36 +247,51 @@ fn player_movement(
 
 const COLOR_HP_PLAYER: Color = Color::srgb(0.2, 0.9, 0.2);
 const COLOR_HP_BG: Color = Color::srgb(0.2, 0.2, 0.2);
+const HP_BAR_WIDTH: f32 = 50.0;
+const HP_BAR_HEIGHT: f32 = 6.0;
 
 #[derive(Component)]
 struct HealthBar {
     owner: Entity,
     offset_y: f32,
+    fill: Entity,
 }
 
-fn spawn_health_bar(commands: &mut Commands, owner: Entity, color: Color, offset_y: f32) {
-    commands
+fn spawn_health_bar(commands: &mut Commands, owner: Entity, color: Color, offset_y: f32) -> Entity {
+    let bar = commands
         .spawn((
             Sprite::from_color(COLOR_HP_BG, Vec2::new(52.0, 8.0)),
             Transform::from_xyz(0.0, 0.0, 100.0),
-            HealthBar { owner, offset_y },
-            // Visibility::Hidden,
+            Visibility::Visible,
         ))
-        .with_children(|parent| {
-            parent.spawn((
-                Sprite::from_color(color, Vec2::new(50.0, 6.0)),
+        .id();
+
+    let mut fill = Entity::PLACEHOLDER;
+    commands.entity(bar).with_children(|parent| {
+        fill = parent
+            .spawn((
+                Sprite::from_color(color, Vec2::new(HP_BAR_WIDTH, HP_BAR_HEIGHT)),
                 Transform::from_xyz(0.0, 0.0, 0.1),
-            ));
-        });
+            ))
+            .id();
+    });
+
+    commands.entity(bar).insert(HealthBar {
+        owner,
+        offset_y,
+        fill,
+    });
+    bar
 }
 
 fn update_player_health_bar(
     mut commands: Commands,
-    health_query: Query<(&Player, &Transform)>,
+    health_query: Query<(&Health, &Transform), With<Player>>,
     mut bar_query: Query<(Entity, &HealthBar, &mut Transform, &mut Visibility), Without<Player>>,
+    mut bar_fill_query: Query<(&mut Sprite, &mut Transform), (Without<HealthBar>, Without<Player>)>,
 ) {
     for (bar_entity, bar, mut bar_transform, mut visibility) in bar_query.iter_mut() {
-        let Ok((player, owner_transform)) = health_query.get(bar.owner) else {
+        let Ok((health, owner_transform)) = health_query.get(bar.owner) else {
             commands.entity(bar_entity).despawn();
             continue;
         };
@@ -276,8 +300,12 @@ fn update_player_health_bar(
         bar_transform.translation.x = owner_transform.translation.x;
         bar_transform.translation.y = owner_transform.translation.y + bar.offset_y;
 
-        // 更新血条长度
-        let ratio = (player.get_health_current() as f32 / player.get_health_max() as f32).max(0.0);
-        let target_width = 50.0 * ratio;
+        // 按血量比例缩放血条填充，并保持左端对齐
+        let ratio = health.ratio();
+        let width = HP_BAR_WIDTH * ratio;
+        if let Ok((mut fill_sprite, mut fill_transform)) = bar_fill_query.get_mut(bar.fill) {
+            fill_sprite.custom_size = Some(Vec2::new(width.max(0.0), HP_BAR_HEIGHT));
+            fill_transform.translation.x = -(HP_BAR_WIDTH - width) * 0.5;
+        }
     }
 }

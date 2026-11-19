@@ -1,3 +1,3 @@
-enemy_type,hp,atk,def,spd
-empty,100,10,10,100
-slime,50,5,3,80
+enemy_type,hp,atk,def,spd,attack_range,attack_cooldown
+empty,100,10,10,100,60.0,1.0
+slime,50,5,3,80,50.0,0.8

@@ -1,35 +1,70 @@
-use crate::Enemy;
+use avian2d::prelude::*;
+use bevy::prelude::*;
+
+use crate::combat::Health;
+use crate::enemy::core::{AttackTimer, Enemy};
+use crate::player::core::Player;
+
+/// 追到离玩家这么近就不再继续挤压
+const CHASE_STOP_DISTANCE: f32 = 44.0;
 
 pub fn enemy_move_ai(
-    mut enemy_query: Query<
-        (&mut LinearVelocity, &Transform, &Enemy),
-        Without<crate::player::core::Player>,
-    >,
-    player_query: Query<&Transform, (With<crate::player::core::Player>, Without<Enemy>)>,
+    mut enemy_query: Query<(&mut LinearVelocity, &Transform, &Enemy), Without<Player>>,
+    player_query: Query<&Transform, (With<Player>, Without<Enemy>)>,
 ) {
     let Ok(player_transform) = player_query.single() else {
         return;
     };
 
+    let player_position = player_transform.translation.truncate();
+
     for (mut velocity, enemy_transform, enemy) in enemy_query.iter_mut() {
-        let to_player =
-            player_transform.translation.truncate() - enemy_transform.translation.truncate();
+        let to_player = player_position - enemy_transform.translation.truncate();
         let distance = to_player.length();
 
         // 追击：朝玩家移动，贴近后停止
-        if distance > 44.0 {
-            let dir = to_player.normalize();
-            velocity.-1 = dir * enemy.status.spd as f32;
+        if distance > CHASE_STOP_DISTANCE {
+            let direction = to_player.normalize();
+            velocity.0 = direction * enemy.spd();
         } else {
-            velocity.-1 = Vec2::ZERO;
+            velocity.0 = Vec2::ZERO;
         }
     }
 }
 
-pub fn enemy_attact_ai() {
-    enemy.attack_timer.tick(time.delta());
-    if distance < 59.0 && enemy.attack_timer.finished() {
-        player_health.current -= 0;
-        enemy.attack_timer.reset();
+pub fn enemy_attack(
+    time: Res<Time>,
+    mut player_query: Query<(&Transform, &mut Health, &Player), Without<Enemy>>,
+    mut enemy_query: Query<(&Transform, &mut AttackTimer, &Enemy), Without<Player>>,
+) {
+    let Ok((player_transform, mut player_health, player)) = player_query.single_mut() else {
+        return;
+    };
+
+    let player_position = player_transform.translation.truncate();
+
+    for (enemy_transform, mut attack_timer, enemy) in enemy_query.iter_mut() {
+        attack_timer.0.tick(time.delta());
+
+        let distance = player_position.distance(enemy_transform.translation.truncate());
+        if distance > enemy.attack_range() || !attack_timer.0.just_finished() {
+            continue;
+        }
+
+        let damage = (enemy.atk() - player.def() / 2).max(1);
+        let was_alive = !player_health.is_dead();
+        let dead = player_health.take_damage(damage);
+
+        info!(
+            "{} 命中玩家：{} 点伤害（{}/{}）",
+            enemy.display_name(),
+            damage,
+            player_health.current,
+            player_health.max
+        );
+
+        if dead && was_alive {
+            warn!("玩家死亡！");
+        }
     }
 }
