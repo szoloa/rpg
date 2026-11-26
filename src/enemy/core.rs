@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use serde::Deserialize;
 
 use crate::combat::Health;
+use crate::i18n::I18n;
 pub use crate::enemy::ai::*;
 
 pub struct EnemyPlugin;
@@ -210,6 +211,14 @@ impl Enemy {
 
     pub fn display_name(&self) -> &str {
         &self.name
+    }
+
+    /// 当前语言下的敌人名称；找不到翻译时回退到 CSV 中的名字。
+    pub fn localized_name(&self, i18n: &I18n) -> String {
+        i18n.tr_or(
+            &format!("enemy.{}", self.enemy_type()),
+            self.display_name(),
+        )
     }
 
     pub fn enemy_type(&self) -> &str {

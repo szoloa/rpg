@@ -5,41 +5,42 @@ use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::*;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-enum Class {
+pub enum Class {
     Warrior,
     Mage,
     Rogue,
 }
 
 impl Class {
-    fn name(&self) -> &'static str {
+    /// 翻译 key，而不是硬编码文本
+    pub fn name_key(self) -> &'static str {
         match self {
-            Class::Warrior => "战士",
-            Class::Mage => "法师",
-            Class::Rogue => "盗贼",
+            Class::Warrior => "class.warrior.name",
+            Class::Mage => "class.mage.name",
+            Class::Rogue => "class.rogue.name",
         }
     }
 
-    fn desc(&self) -> &'static str {
+    pub fn desc_key(self) -> &'static str {
         match self {
-            Class::Warrior => "高生命高防御，物理伤害的主力。",
-            Class::Mage => "体质脆弱，但法术伤害惊人。",
-            Class::Rogue => "敏捷灵巧，爆发力强且极易闪避。",
+            Class::Warrior => "class.warrior.desc",
+            Class::Mage => "class.mage.desc",
+            Class::Rogue => "class.rogue.desc",
         }
     }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-enum Races {
+pub enum Races {
     Human,
     Elves,
 }
 
 impl Races {
-    fn name(&self) -> &'static str {
+    pub fn name_key(self) -> &'static str {
         match self {
-            Races::Human => "人类",
-            Races::Elves => "精灵",
+            Races::Human => "race.human.name",
+            Races::Elves => "race.elves.name",
         }
     }
 }
@@ -155,6 +156,15 @@ impl Player {
     }
     pub fn def(&self) -> i32 {
         self.attribute.def
+    }
+    pub fn mp(&self) -> i32 {
+        self.status.mp
+    }
+    pub fn class(&self) -> Class {
+        self.class
+    }
+    pub fn race(&self) -> Races {
+        self.races
     }
 }
 

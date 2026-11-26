@@ -1,0 +1,25 @@
+key,text
+i18n.switched,语言已切换为 {{language}}（F1 再次切换）
+hud.title,{{name}} · Lv.{{level}}
+hud.race_class,种族：{{race}}    职业：{{class}}
+hud.hp,HP：{{current}}/{{max}}    MP：{{mp}}/{{max_mp}}
+hud.controls,WASD 移动    J/空格 攻击    E 拾取    F1 切换语言
+hud.language,当前语言：{{language}}
+class.warrior.name,战士
+class.warrior.desc,高生命高防御，物理伤害的主力。
+class.mage.name,法师
+class.mage.desc,体质脆弱，但法术伤害惊人。
+class.rogue.name,盗贼
+class.rogue.desc,敏捷灵巧，爆发力强且极易闪避。
+race.human.name,人类
+race.elves.name,精灵
+combat.hit,命中 {{enemy}}：{{damage}} 点伤害（{{current}}/{{max}}）
+combat.miss,攻击落空
+combat.kill,{{enemy}} 已被击杀
+combat.player_hit,{{enemy}} 命中玩家：{{damage}} 点伤害（{{current}}/{{max}}）
+combat.player_death,玩家死亡！
+bag.pickup,拾取了 {{item}}（{{count}}/{{capacity}}）
+bag.full,背包已满！
+item.debug,调试物品
+enemy.empty,虚空魔
+enemy.slime,史莱姆

@@ -1,0 +1,25 @@
+key,text
+i18n.switched,Switched language to {{language}} (press F1 to switch again)
+hud.title,{{name}} · Lv.{{level}}
+hud.race_class,Race: {{race}}    Class: {{class}}
+hud.hp,HP: {{current}}/{{max}}    MP: {{mp}}/{{max_mp}}
+hud.controls,WASD Move    J/Space Attack    E Pick up    F1 Language
+hud.language,Language: {{language}}
+class.warrior.name,Warrior
+class.warrior.desc,High HP and defense — the physical damage main.
+class.mage.name,Mage
+class.mage.desc,Fragile body but devastating spell damage.
+class.rogue.name,Rogue
+class.rogue.desc,Agile and bursty with high evasion.
+race.human.name,Human
+race.elves.name,Elf
+combat.hit,Hit {{enemy}} for {{damage}} damage ({{current}}/{{max}})
+combat.miss,Attack missed
+combat.kill,{{enemy}} was slain
+combat.player_hit,{{enemy}} hit you for {{damage}} damage ({{current}}/{{max}})
+combat.player_death,You died!
+bag.pickup,Picked up {{item}} ({{count}}/{{capacity}})
+bag.full,Inventory is full!
+item.debug,Debug item
+enemy.empty,Void Fiend
+enemy.slime,Slime

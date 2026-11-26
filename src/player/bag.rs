@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::i18n::I18n;
+
 pub struct BagPlugin;
 
 pub trait BagItem: Send + Sync + Clone + 'static {
@@ -99,6 +101,7 @@ impl Plugin for BagPlugin {
 fn debug_pickup(
     mut query: Query<&mut ContainerComponent<CommonItem>, With<crate::Player>>,
     keyboard: Res<ButtonInput<KeyCode>>,
+    i18n: Res<I18n>,
 ) {
     if !keyboard.just_pressed(KeyCode::KeyE) {
         return;
@@ -106,7 +109,7 @@ fn debug_pickup(
 
     let item = match pseudo_rand() {
         _ => CommonItem {
-            item_name: "empty".to_string(),
+            item_name: i18n.tr("item.debug"),
             item_type: ItemType::Weapon,
             max_stack: 1,
         },
@@ -120,14 +123,19 @@ fn debug_pickup(
     let inv = &mut container.0;
 
     if inv.add_item(item.clone()) {
-        println!(
-            "[Bag] Picked up {} ({}/{})",
-            name,
-            inv.count(),
-            inv.capacity
+        info!(
+            "{}",
+            i18n.tr_args(
+                "bag.pickup",
+                &[
+                    ("item", name.to_string()),
+                    ("count", inv.count().to_string()),
+                    ("capacity", inv.capacity.to_string()),
+                ]
+            )
         );
     } else {
-        println!("[Bag] Inventory is full!");
+        info!("{}", i18n.tr("bag.full"));
     }
 }
 

@@ -3,6 +3,7 @@ use bevy::prelude::*;
 
 use crate::combat::Health;
 use crate::enemy::core::{AttackTimer, Enemy};
+use crate::i18n::I18n;
 use crate::player::core::Player;
 
 /// 追到离玩家这么近就不再继续挤压
@@ -34,6 +35,7 @@ pub fn enemy_move_ai(
 
 pub fn enemy_attack(
     time: Res<Time>,
+    i18n: Res<I18n>,
     mut player_query: Query<(&Transform, &mut Health, &Player), Without<Enemy>>,
     mut enemy_query: Query<(&Transform, &mut AttackTimer, &Enemy), Without<Player>>,
 ) {
@@ -55,16 +57,22 @@ pub fn enemy_attack(
         let was_alive = !player_health.is_dead();
         let dead = player_health.take_damage(damage);
 
+        let enemy_name = enemy.localized_name(&i18n);
         info!(
-            "{} 命中玩家：{} 点伤害（{}/{}）",
-            enemy.display_name(),
-            damage,
-            player_health.current,
-            player_health.max
+            "{}",
+            i18n.tr_args(
+                "combat.player_hit",
+                &[
+                    ("enemy", enemy_name),
+                    ("damage", damage.to_string()),
+                    ("current", player_health.current.to_string()),
+                    ("max", player_health.max.to_string()),
+                ]
+            )
         );
 
         if dead && was_alive {
-            warn!("玩家死亡！");
+            warn!("{}", i18n.tr("combat.player_death"));
         }
     }
 }

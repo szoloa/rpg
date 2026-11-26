@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+use crate::I18n;
 use crate::enemy::core::Enemy;
 use crate::player::core::Player;
 
@@ -59,6 +60,7 @@ impl Plugin for CombatPlugin {
 fn player_attack(
     time: Res<Time>,
     keyboard: Res<ButtonInput<KeyCode>>,
+    i18n: Res<I18n>,
     mut commands: Commands,
     mut player_query: Query<(&Transform, &Player, &mut AttackCooldown), Without<Enemy>>,
     mut enemy_query: Query<(Entity, &Transform, &Enemy, &mut Health), Without<Player>>,
@@ -88,21 +90,28 @@ fn player_attack(
         hit_any = true;
         let damage = (player.atk() - enemy.def() / 2).max(1);
         let dead = health.take_damage(damage);
+
+        let enemy_name = enemy.localized_name(&i18n);
         info!(
-            "命中 {}：{} 点伤害（{}/{}）",
-            enemy.display_name(),
-            damage,
-            health.current,
-            health.max
+            "{}",
+            i18n.tr_args(
+                "combat.hit",
+                &[
+                    ("enemy", enemy_name.clone()),
+                    ("damage", damage.to_string()),
+                    ("current", health.current.to_string()),
+                    ("max", health.max.to_string()),
+                ]
+            )
         );
 
         if dead {
-            info!("{} 已被击杀", enemy.display_name());
+            info!("{}", i18n.tr_args("combat.kill", &[("enemy", enemy_name)]));
             commands.entity(entity).despawn();
         }
     }
 
     if !hit_any {
-        info!("攻击落空");
+        info!("{}", i18n.tr("combat.miss"));
     }
 }
